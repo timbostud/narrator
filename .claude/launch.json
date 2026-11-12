@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "narrator-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--strictPort"],
+      "port": 5173
+    },
+    {
+      "name": "narrator-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--strictPort"],
+      "port": 4173
+    }
+  ]
+}

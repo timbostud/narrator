@@ -1,0 +1,31 @@
+{
+  "name": "narrator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "On-device neural narrator for English and German with a Liquid Glass interface.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@diffusionstudio/piper-wasm": "^1.0.0",
+    "@huggingface/transformers": "^3.8.1",
+    "kokoro-js": "^1.2.1",
+    "onnxruntime-web": "^1.22.0-dev.20250409-89f8206ba4",
+    "phonemizer": "^1.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
