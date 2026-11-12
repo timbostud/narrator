@@ -178,6 +178,18 @@ input, textarea { font: inherit; color: inherit; }
 .glass.clear { background: rgba(255, 255, 255, 0.015); --glass-blur: 0.5px; }
 .glass.strong { background: var(--glass-tint-strong); }
 
+/* ───────────────────────── Liquid merging (see src/ui/liquid.ts) ───────────────────────── */
+.liquid-layer { position: fixed; inset: 0; pointer-events: none; z-index: 41; }
+.liquid-bridge, .liquid-rim { position: absolute; display: none; }
+/* Same material as the dock glass, so a neck reads as part of the shapes it joins */
+.liquid-bridge {
+  background: color-mix(in srgb, var(--glass-tint-strong) 80%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8) brightness(1.06);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.8) brightness(1.06);
+}
+.liquid-rim { overflow: visible; }
+.liquid-rim path { fill: none; stroke: var(--glass-rim); stroke-opacity: 0.45; stroke-width: 1; stroke-linecap: round; }
+
 /* ───────────────────────── Layout ───────────────────────── */
 .app {
   position: relative;
@@ -316,7 +328,8 @@ input, textarea { font: inherit; color: inherit; }
   z-index: 38;
   pointer-events: none;
 }
-.fab-dock.raised { bottom: calc(var(--safe-bottom) + 14px + var(--tabbar-h) + 84px); }
+/* Above the mini player while it has its own row; drops back down when the dock minimizes */
+.fab-dock.raised { bottom: calc(var(--safe-bottom) + 14px + var(--tabbar-h) + 14px + (1 - var(--dock, 0)) * 76px); }
 .fab-dock .fab { pointer-events: auto; }
 .doc-text {
   width: 100%;
@@ -514,28 +527,31 @@ input, textarea { font: inherit; color: inherit; }
   left: 0;
   right: 0;
   bottom: calc(var(--safe-bottom) + 14px);
+  height: var(--tabbar-h);
   z-index: 40;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 16px;
   pointer-events: none;
 }
+/* Position and width are driven by the dock spring (src/ui/dock.ts) */
 .tabbar {
   --radius: 999px;
   pointer-events: auto;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 16px;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   height: var(--tabbar-h);
   padding: 4px;
-  width: min(100%, 360px);
+  width: 360px;
   touch-action: none;
 }
 .tab {
   position: relative;
   z-index: 4;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -565,10 +581,10 @@ input, textarea { font: inherit; color: inherit; }
 .mini {
   --radius: 999px;
   position: fixed;
-  left: 50%;
-  bottom: calc(var(--safe-bottom) + 14px + var(--tabbar-h) + 10px);
-  width: min(calc(100% - 32px), 528px);
-  margin-left: calc(min(calc(100% - 32px), 528px) / -2);
+  /* left / width / bottom are driven by the dock spring */
+  left: 16px;
+  bottom: calc(var(--safe-bottom) + 14px + var(--tabbar-h) + 14px);
+  width: calc(100% - 32px);
   z-index: 39;
   height: 62px;
   display: flex;

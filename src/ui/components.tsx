@@ -5,6 +5,8 @@ import {
 import { usePress, useRefraction } from './hooks';
 import type { RefractOptions } from './glass';
 import { clamp, drag, haptic, rubberBand, Spring, SPRINGS } from './physics';
+import { column, dockSpring, dockState, lerp, setCompact, TABBAR_COMPACT, TABBAR_FULL } from './dock';
+import { joinLiquid } from './liquid';
 
 /* ───────────────────────── Glass surface ───────────────────────── */
 
@@ -56,7 +58,7 @@ function useLiquidLens(
   count: number,
   index: number,
   onSelect: (i: number) => void,
-  opts: { grow?: number; draggable?: boolean } = {},
+  opts: { grow?: number; draggable?: boolean; canDrag?: () => boolean } = {},
 ) {
   const x = useRef(new Spring(0, SPRINGS.jelly));
   const grow = useRef(new Spring(1, SPRINGS.bouncy));
@@ -113,6 +115,7 @@ function useLiquidLens(
       axis: 'x',
       threshold: 4,
       onStart: (s) => {
+        if (opts.canDrag && !opts.canDrag()) return false;
         const rect = el.getBoundingClientRect();
         const { pad, slot } = geom.current;
         const px = s.event.clientX - s.dx - rect.left;
@@ -182,14 +185,49 @@ export function TabBar<T extends string>({ tabs, value, onChange }: {
   const ref = useRef<HTMLDivElement>(null);
   const lens = useRef<HTMLDivElement>(null);
   const index = Math.max(0, tabs.findIndex((t) => t.value === value));
-  useLiquidLens(ref, lens, tabs.length, index, (i) => onChange(tabs[i].value), { grow: 1.22 });
+  useLiquidLens(ref, lens, tabs.length, index, (i) => onChange(tabs[i].value), { grow: 1.22, canDrag: () => !dockState.get().compact });
+  useEffect(() => (ref.current ? joinLiquid(ref.current) : undefined), []);
+
+  // Minimized (iOS 26): shrink to one capsule holding the current tab, docked to the left.
+  const indexRef = useRef(index);
+  indexRef.current = index;
+  const layout = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const p = dockSpring.value;
+    const col = column();
+    const full = Math.min(col.width, TABBAR_FULL);
+    const w = lerp(full, TABBAR_COMPACT, p);
+    el.style.width = `${w.toFixed(2)}px`;
+    el.style.left = `${lerp(col.left + (col.width - full) / 2, col.left, p).toFixed(2)}px`;
+    const q = Math.max(0, 1 - p);
+    el.style.gridTemplateColumns = tabs.map((_, i) => `minmax(0, ${i === indexRef.current ? 1 : Math.max(0.0001, q)}fr)`).join(' ');
+    el.querySelectorAll<HTMLElement>('.tab').forEach((b, i) => {
+      b.style.opacity = i === indexRef.current ? '1' : (q * q).toFixed(3);
+      const label = b.querySelector('span');
+      if (label) label.style.opacity = q.toFixed(3);
+    });
+    if (lens.current) lens.current.style.opacity = q.toFixed(3);
+  }, [tabs]);
+  useEffect(() => {
+    layout();
+    const off = dockSpring.onChange(layout);
+    addEventListener('resize', layout);
+    return () => { off(); removeEventListener('resize', layout); };
+  }, [layout]);
+  useEffect(layout, [index, layout]);
+
   return (
     <div className="tabbar-wrap">
       <Glass ref={ref} className="tabbar" refraction={{ depth: 40, bezel: 24 }} role="tablist">
         <Glass ref={lens} className="lens" refraction={{ depth: 34, bezel: 20 }} />
         {tabs.map((t) => (
           <button key={t.value} type="button" role="tab" aria-selected={t.value === value} className={`tab ${t.value === value ? 'on' : ''}`}
-            onClick={() => { onChange(t.value); haptic(5); }}>
+            onClick={() => {
+              haptic(5);
+              if (dockState.get().compact) { setCompact(false); return; }
+              onChange(t.value);
+            }}>
             {t.icon}
             <span>{t.label}</span>
           </button>
@@ -380,7 +418,7 @@ export const Sheet = forwardRef<SheetHandle, { open: boolean; onClose: () => voi
         axis: 'y',
         onStart: (s) => {
           // Let the inner list scroll unless it's at the top and the user pulls down.
-          const scroller = (s.event.target as HTMLElement).closest('.sheet-scroll') as HTMLElement | null;
+          const scroller = s.target?.closest('.sheet-scroll') as HTMLElement | null;
           if (scroller && (scroller.scrollTop > 0 || s.dy < 0)) return false;
           startV = y.current.value;
         },

@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Glass, IconButton, Segmented, toast } from '../ui/components';
 import { Doc as DocIcon, Gear, Pencil, Play, Plus, Sparkle } from '../ui/icons';
 import { useStore } from '../lib/store';
@@ -8,8 +9,9 @@ import { narrator, playerState } from '../tts/player';
 import { detectLang } from '../tts/text/detect';
 import { voiceFor } from '../tts/voices';
 import { Reader } from './Reader';
+import { joinLiquid } from '../ui/liquid';
 
-export function ReadScreen({ doc, setDoc, openSettings }: { doc: Doc | null; setDoc: (d: Doc) => void; openSettings: () => void }) {
+export function ReadScreen({ doc, setDoc, openSettings, active }: { doc: Doc | null; setDoc: (d: Doc) => void; openSettings: () => void; active: boolean }) {
   const s = useStore(settings);
   const ps = useStore(playerState);
   const [text, setText] = useState(doc?.text ?? '');
@@ -17,6 +19,7 @@ export function ReadScreen({ doc, setDoc, openSettings }: { doc: Doc | null; set
   const [editing, setEditing] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const fabRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<number>(0);
 
   // Grow the editor with its content so the whole screen scrolls as one page.
@@ -33,6 +36,9 @@ export function ReadScreen({ doc, setDoc, openSettings }: { doc: Doc | null; set
   }, [doc?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isOpenInPlayer = !!doc && ps.docId === doc.id && !!ps.plan;
+
+  // The Listen button is part of the dock's liquid group: it merges with whatever it touches.
+  useEffect(() => (fabRef.current ? joinLiquid(fabRef.current) : undefined), [isOpenInPlayer, active]);
   useEffect(() => {
     if (isOpenInPlayer && ps.status !== 'idle') setEditing(false);
   }, [isOpenInPlayer, ps.status]);
@@ -159,13 +165,15 @@ export function ReadScreen({ doc, setDoc, openSettings }: { doc: Doc | null; set
       <p className="hint">Runs on your device · {voice.model}</p>
 
       {/* Floating action: sits above the tab bar (and above the mini player when another text is playing) */}
-      {!isOpenInPlayer && (
+      {/* Portaled to <body>: the screen's transition transform would otherwise capture position:fixed */}
+      {!isOpenInPlayer && active && createPortal(
         <div className={`fab-dock ${ps.plan ? 'raised' : ''}`}>
-          <Glass as="button" type="button" className="fab" press={1.06} refraction={{ depth: 40, bezel: 26 }} onClick={() => void listen()}>
+          <Glass ref={fabRef} as="button" type="button" className="fab" press={1.06} refraction={{ depth: 40, bezel: 26 }} onClick={() => void listen()}>
             <Play />
             <span>Listen</span>
           </Glass>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

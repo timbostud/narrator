@@ -3,6 +3,7 @@ import { TabBar, Toaster } from './ui/components';
 import { Book, Person, Wave } from './ui/icons';
 import { startLight } from './ui/glass';
 import { Spring, SPRINGS } from './ui/physics';
+import { followScroll, setCompact } from './ui/dock';
 import { useStore } from './lib/store';
 import { settings } from './lib/settings';
 import { library, loadLibrary, patchDoc, type Doc } from './lib/library';
@@ -73,6 +74,13 @@ export function App() {
 
   // Screen transitions: the incoming screen slides and settles on a spring; the outgoing one
   // recedes slightly, as in iOS.
+  // iOS 26 dock: minimize while scrolling down a screen, restore on scroll up / tab change.
+  useEffect(() => {
+    const offs = TABS.map((t) => screens.current[t]).filter((el): el is HTMLDivElement => !!el).map(followScroll);
+    return () => offs.forEach((off) => off());
+  }, []);
+  useEffect(() => setCompact(false), [tab]);
+
   const prevTab = useRef<Tab>(tab);
   useEffect(() => {
     const from = TABS.indexOf(prevTab.current);
@@ -118,7 +126,7 @@ export function App() {
       <div className="ambient" aria-hidden />
       <main className="app">
         <div ref={(el) => { screens.current.read = el; }} className="screen" aria-hidden={tab !== 'read'}>
-          <ReadScreen doc={doc} setDoc={setDoc} openSettings={() => setSettingsOpen(true)} />
+          <ReadScreen doc={doc} setDoc={setDoc} openSettings={() => setSettingsOpen(true)} active={tab === 'read'} />
         </div>
         <div ref={(el) => { screens.current.library = el; libScroll.current = el; }} className="screen" aria-hidden={tab !== 'library'}>
           <LibraryScreen open={openDoc} play={playDoc} scrollRef={libScroll} />

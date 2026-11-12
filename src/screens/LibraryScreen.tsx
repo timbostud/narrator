@@ -194,7 +194,7 @@ export function LibraryScreen({ open, play, scrollRef }: { open: (d: Doc) => voi
       axis: 'y',
       onStart: (s) => {
         if (scroller.scrollTop > 0 || s.dy < 0) return false;
-        if ((s.event.target as HTMLElement).closest('input,textarea')) return false;
+        if (s.target?.closest('input,textarea')) return false;
       },
       onMove: ({ dy }) => {
         const v = Math.max(0, rubberBand(dy, innerHeight, 0.45));

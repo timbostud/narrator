@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Glass, IconButton, Segmented, Sheet, Slider, toast } from '../ui/components';
 import { Backward, ChevronDown, Forward, Pause, Play, Share } from '../ui/icons';
 import { drag, haptic, rubberBand, Spring, SPRINGS, squeeze } from '../ui/physics';
+import { column, DOCK_GAP, dockSpring, lerp, TABBAR_COMPACT, TABBAR_H } from '../ui/dock';
+import { joinLiquid } from '../ui/liquid';
 import { useStore } from '../lib/store';
 import { settings, setSetting } from '../lib/settings';
 import { narrator, playerState } from '../tts/player';
@@ -35,18 +37,37 @@ export function MiniPlayer({ onExpand }: { onExpand: () => void }) {
     const render = () => {
       const ax = Math.abs(x.value) >= Math.abs(y.value) ? 'x' : 'y';
       const d = ax === 'x' ? x.value : y.value;
-      const amt = Math.abs(d) / (ax === 'x' ? el.offsetWidth : 120) * 0.9;
-      el.style.transformOrigin = ax === 'x' ? (d > 0 ? '0% 50%' : '100% 50%') : '50% 100%';
+      const amt = Math.min(0.12, Math.abs(d) / (ax === 'x' ? el.offsetWidth : 160) * 0.6);
+      // Stretch away from the anchored side, so it reads as being pulled.
+      el.style.transformOrigin = ax === 'x' ? (d > 0 ? '0% 50%' : '100% 50%') : d > 0 ? '50% 0%' : '50% 100%';
       el.style.transform = `translate(${x.value.toFixed(1)}px, ${y.value.toFixed(1)}px) ${squeeze(amt, ax)}`;
     };
     const a = x.onChange(render);
     const b = y.onChange(render);
+
+    // Dock position: its own row above the tab bar, or beside the minimized tab bar.
+    const layout = () => {
+      const p = dockSpring.value;
+      const col = column();
+      const left = lerp(col.left, col.left + TABBAR_COMPACT + 12, p);
+      el.style.left = `${left.toFixed(2)}px`;
+      el.style.width = `${(col.left + col.width - left).toFixed(2)}px`;
+      const rise = lerp(TABBAR_H + DOCK_GAP, (TABBAR_H - el.offsetHeight) / 2, p);
+      el.style.bottom = `calc(var(--safe-bottom) + 14px + ${rise.toFixed(2)}px)`;
+    };
+    layout();
+    const offDock = dockSpring.onChange(layout);
+    addEventListener('resize', layout);
+    const leave = joinLiquid(el);
+
     let fired = false;
     const stop = drag(el, {
-      onStart: (s) => { if ((s.event.target as HTMLElement).closest('button')) return false; fired = false; },
+      onStart: (s) => { if (s.target?.closest('button')) return false; fired = false; },
       onMove: ({ dx, dy }) => {
         if (Math.abs(dx) > Math.abs(dy)) { x.set(rubberBand(dx, 220, 0.7)); y.set(0); }
-        else { y.set(Math.min(0, rubberBand(dy, 260, 0.7)) + Math.max(0, rubberBand(dy, 60, 0.3))); x.set(0); }
+        // Pulling down is allowed far enough to touch the tab bar, where the two glass shapes
+        // merge; let go and the neck stretches and snaps as it springs back.
+        else { y.set(dy < 0 ? rubberBand(dy, 260, 0.7) : rubberBand(dy, 120, 0.6)); x.set(0); }
         if (!fired && Math.abs(dx) > 70) { fired = true; haptic(10); }
       },
       onEnd: ({ dx, dy, vx, vy }) => {
@@ -55,9 +76,9 @@ export function MiniPlayer({ onExpand }: { onExpand: () => void }) {
         x.to(0, { velocity: vx, config: SPRINGS.jelly });
         y.to(0, { velocity: vy, config: SPRINGS.jelly });
       },
-      onTap: (e) => { if (!(e.target as HTMLElement).closest('button')) expandRef.current(); },
+      onTap: (_e, target) => { if (!target?.closest('button')) expandRef.current(); },
     });
-    return () => { stop(); a(); b(); };
+    return () => { stop(); a(); b(); offDock(); leave(); removeEventListener('resize', layout); };
   }, [ps.plan]);
 
   if (!ps.plan) return null;

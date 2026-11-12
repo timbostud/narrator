@@ -135,6 +135,8 @@ export interface DragState {
   vx: number;
   vy: number;
   event: PointerEvent;
+  /** The element the press started on (move events can target anything, even the window). */
+  target: Element | null;
 }
 
 export interface DragOptions {
@@ -144,7 +146,7 @@ export interface DragOptions {
   onStart?: (s: DragState) => void | false;
   onMove?: (s: DragState) => void;
   onEnd?: (s: DragState) => void;
-  onTap?: (e: PointerEvent) => void;
+  onTap?: (e: PointerEvent, target: Element | null) => void;
 }
 
 /** Pointer-based drag recognizer with velocity tracking and axis locking. */
@@ -155,6 +157,7 @@ export function drag(el: HTMLElement, opts: DragOptions): () => void {
   let started = false;
   let rejected = false;
   let samples: { t: number; x: number; y: number }[] = [];
+  let origin: Element | null = null;
 
   const velocity = () => {
     const now = performance.now();
@@ -169,6 +172,7 @@ export function drag(el: HTMLElement, opts: DragOptions): () => void {
   const down = (e: PointerEvent) => {
     if (id !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
     id = e.pointerId;
+    origin = e.target instanceof Element ? e.target : null;
     x0 = e.clientX;
     y0 = e.clientY;
     started = false;
@@ -192,7 +196,7 @@ export function drag(el: HTMLElement, opts: DragOptions): () => void {
         rejected = true;
         return;
       }
-      if (opts.onStart?.({ dx, dy, vx: 0, vy: 0, event: e }) === false) {
+      if (opts.onStart?.({ dx, dy, vx: 0, vy: 0, event: e, target: origin }) === false) {
         rejected = true;
         return;
       }
@@ -200,15 +204,15 @@ export function drag(el: HTMLElement, opts: DragOptions): () => void {
       try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     }
     e.preventDefault();
-    opts.onMove?.({ dx, dy, ...velocity(), event: e });
+    opts.onMove?.({ dx, dy, ...velocity(), event: e, target: origin });
   };
 
   const finish = (e: PointerEvent, tap: boolean) => {
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', cancel);
-    if (started) opts.onEnd?.({ dx: e.clientX - x0, dy: e.clientY - y0, ...velocity(), event: e });
-    else if (tap && !rejected) opts.onTap?.(e);
+    if (started) opts.onEnd?.({ dx: e.clientX - x0, dy: e.clientY - y0, ...velocity(), event: e, target: origin });
+    else if (tap && !rejected) opts.onTap?.(e, origin);
     id = null;
     started = false;
   };
