@@ -37,7 +37,7 @@ function VoiceCard({ v }: { v: VoiceDef }) {
   const loading = st.status === 'loading';
   return (
     <Glass ref={ref} className={`voice-card ${selected ? 'selected' : ''}`} refraction={{ depth: 34, bezel: 26 }}
-      style={{ ['--hue-a' as string]: v.hue[0], ['--hue-b' as string]: v.hue[1] }} role="button" aria-pressed={selected} aria-label={`${v.name}, ${v.gender} ${v.lang === 'de' ? 'German' : 'English'} voice`}>
+      role="button" aria-pressed={selected} aria-label={`${v.name}, ${v.gender} ${v.lang === 'de' ? 'German' : 'English'} voice`}>
       <div className="row2">
         <Orb voice={v} live={previewing} />
         <button type="button" className="icon-btn glass" style={{ width: 40, height: 40 }} onClick={preview}
@@ -55,7 +55,7 @@ function VoiceCard({ v }: { v: VoiceDef }) {
       ) : null}
       <div className="row2">
         {ready ? (
-          <span className="status-chip ready"><Check />{st.device === 'gpu' ? 'Ready · GPU' : st.status === 'ready' ? 'Ready' : 'On device'}</span>
+          <span className="status-chip ready"><Check />{st.device === 'gpu' ? 'Ready · GPU' : 'Ready'}</span>
         ) : loading ? (
           <span className="status-chip">{st.progress >= 0.999 ? 'Preparing…' : `${Math.round(st.progress * 100)}%`}</span>
         ) : (

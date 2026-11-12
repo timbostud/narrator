@@ -17,7 +17,7 @@ if (import.meta.env.DEV || location.search.includes('debug')) {
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
     // First visit on a host without COOP/COEP headers: once the worker controls the page,
     // reload so it can serve the page cross-origin isolated (enables multi-threaded synthesis).
     if (!crossOriginIsolated && !sessionStorage.getItem('narrator.coi')) {

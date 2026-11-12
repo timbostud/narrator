@@ -122,7 +122,7 @@ export function ReadScreen({ doc, setDoc, openSettings }: { doc: Doc | null; set
           <span>{words} words</span>
           <span>≈ {minutes} min</span>
           {isOpenInPlayer && !editing && (
-            <button type="button" style={{ color: 'var(--accent-2)', fontWeight: 600 }} onClick={() => { void narrator.pause(); setEditing(true); }}>
+            <button type="button" style={{ color: 'var(--accent)', fontWeight: 600 }} onClick={() => { void narrator.pause(); setEditing(true); }}>
               Edit text
             </button>
           )}

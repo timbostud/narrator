@@ -7,12 +7,12 @@ The full product spec (the improved version of the original brief) is in [SPEC.m
 
 ## Voices
 
-| | Voice | Model | Size |
+| Language | Voice | Model | Size |
 |---|---|---|---|
-| 🇬🇧 female | **Ava** | Kokoro-82M `af_heart` | 326 MB (shared) |
-| 🇬🇧 male | **Leo** | Kokoro-82M `am_michael` | ↑ same model |
-| 🇩🇪 female | **Lena** | Piper VITS `de_DE-kerstin-medium` | 63 MB |
-| 🇩🇪 male | **Jonas** | Piper VITS `de_DE-thorsten-medium` | 63 MB |
+| English, female | **Ava** | Kokoro-82M `af_heart` | 326 MB (shared) |
+| English, male | **Leo** | Kokoro-82M `am_michael` | same model |
+| German, female | **Lena** | Piper VITS `de_DE-kerstin-medium` | 63 MB |
+| German, male | **Jonas** | Piper VITS `de_DE-thorsten-medium` | 63 MB |
 
 Each voice downloads once (into the Origin Private File System) and then works offline.
 With **Auto** language, each paragraph is detected separately, so mixed English/German texts switch voices

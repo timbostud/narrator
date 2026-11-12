@@ -4,7 +4,7 @@
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
   --font-read: 'New York', 'Iowan Old Style', 'Charter', 'Georgia', 'Cambria', serif;
 
-  --bg: #07070c;
+  --bg: #000000;
   --text: #f5f5f7;
   --text-2: rgba(235, 235, 245, 0.62);
   --text-3: rgba(235, 235, 245, 0.36);
@@ -14,11 +14,15 @@
   --fill: rgba(120, 120, 128, 0.2);
   --fill-2: rgba(120, 120, 128, 0.12);
 
-  --accent: #8f6bff;
-  --accent-2: #ff7ab6;
+  /* Apple system colors (dark appearance) */
+  --accent: #0a84ff;
+  --accent-2: #0a84ff;
   --danger: #ff453a;
   --success: #30d158;
   --warning: #ffd60a;
+  --monogram-top: #98989f;
+  --monogram-bottom: #6c6c72;
+  --bg-top: #1c1c1e;
 
   --glass-tint: rgba(255, 255, 255, 0.07);
   --glass-tint-strong: rgba(255, 255, 255, 0.12);
@@ -42,7 +46,7 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
     color-scheme: light;
-    --bg: #eef0f6;
+    --bg: #f2f2f7;
     --text: #0b0b10;
     --text-2: rgba(60, 60, 67, 0.7);
     --text-3: rgba(60, 60, 67, 0.4);
@@ -56,11 +60,18 @@
     --glass-rim: rgba(255, 255, 255, 0.95);
     --glass-shadow: 0 10px 36px rgba(30, 30, 60, 0.16), 0 2px 6px rgba(30, 30, 60, 0.08);
     --sheen: rgba(255, 255, 255, 0.5);
+    --accent: #007aff;
+    --accent-2: #007aff;
+    --danger: #ff3b30;
+    --success: #34c759;
+    --monogram-top: #c7c7cc;
+    --monogram-bottom: #a1a1a6;
+    --bg-top: #ffffff;
   }
 }
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #eef0f6;
+  --bg: #f2f2f7;
   --text: #0b0b10;
   --text-2: rgba(60, 60, 67, 0.7);
   --text-3: rgba(60, 60, 67, 0.4);
@@ -74,6 +85,13 @@
   --glass-rim: rgba(255, 255, 255, 0.95);
   --glass-shadow: 0 10px 36px rgba(30, 30, 60, 0.16), 0 2px 6px rgba(30, 30, 60, 0.08);
   --sheen: rgba(255, 255, 255, 0.5);
+  --accent: #007aff;
+  --accent-2: #007aff;
+  --danger: #ff3b30;
+  --success: #34c759;
+  --monogram-top: #c7c7cc;
+  --monogram-bottom: #a1a1a6;
+  --bg-top: #ffffff;
 }
 
 /* Accessibility: Reduce Transparency → opaque "tinted" glass, like Apple's 26.1 option */
@@ -101,39 +119,14 @@ input, textarea { font: inherit; color: inherit; }
 ::selection { background: color-mix(in srgb, var(--accent) 45%, transparent); }
 
 /* ───────────────────────── Ambient background ───────────────────────── */
+/* Calm, neutral system background: a soft top light, like iOS grouped backgrounds.
+   The content itself is what the glass refracts. No colored blobs. */
 .ambient {
   position: fixed;
-  inset: -20%;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
-  filter: saturate(1.25);
-  transition: opacity 0.6s;
-}
-.ambient .blob {
-  position: absolute;
-  width: 62vmax;
-  height: 62vmax;
-  border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.6;
-  will-change: transform;
-  transition: background 1.2s ease;
-}
-.ambient .b1 { background: radial-gradient(circle, var(--hue-a) 0%, transparent 65%); left: -8%; top: -10%; animation: drift1 26s ease-in-out infinite alternate; }
-.ambient .b2 { background: radial-gradient(circle, var(--hue-b) 0%, transparent 65%); right: -12%; top: 18%; animation: drift2 31s ease-in-out infinite alternate; }
-.ambient .b3 { background: radial-gradient(circle, color-mix(in srgb, var(--hue-a) 50%, #ffd36b) 0%, transparent 65%); left: 15%; bottom: -22%; opacity: 0.38; animation: drift3 37s ease-in-out infinite alternate; }
-.ambient .grain {
-  position: absolute; inset: 0; opacity: 0.06; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-@keyframes drift1 { to { transform: translate(18vw, 12vh) scale(1.15); } }
-@keyframes drift2 { to { transform: translate(-16vw, 20vh) scale(0.9); } }
-@keyframes drift3 { to { transform: translate(10vw, -18vh) scale(1.2); } }
-
-/* Stripes behind glass make refraction visible, like the reference shots */
-.ambient .lines {
-  position: absolute; inset: 0; opacity: 0.05;
-  background: repeating-linear-gradient(115deg, var(--text) 0 1px, transparent 1px 46px);
+  background: radial-gradient(120% 70% at 50% -10%, var(--bg-top) 0%, var(--bg) 70%);
 }
 
 /* ───────────────────────── Liquid Glass material ───────────────────────── */
@@ -353,12 +346,12 @@ input, textarea { font: inherit; color: inherit; }
 }
 .reader .s { border-radius: 8px; transition: background-color 0.35s, color 0.35s; cursor: pointer; padding: 1px 0; color: var(--text-2); }
 .reader .s.past { color: var(--text-3); }
-.reader .s.now { color: var(--text); background: color-mix(in srgb, var(--accent) 16%, transparent); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.reader .s.now { color: var(--text); background: var(--fill-2); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+/* Current word: a quiet accent tint, like Apple Books' read-aloud highlight */
 .reader .w.now {
-  color: white;
-  background: linear-gradient(135deg, var(--hue-a), var(--hue-b));
-  border-radius: 6px;
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--hue-b) 50%, transparent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: 5px;
   padding: 0 2px;
   margin: 0 -2px;
 }
@@ -379,11 +372,12 @@ input, textarea { font: inherit; color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 600;
   color: white;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--hue-a) 80%, transparent), color-mix(in srgb, var(--hue-b) 80%, transparent));
+  background: color-mix(in srgb, var(--accent) 88%, transparent);
 }
+.fab.glass.is-refracting { background: color-mix(in srgb, var(--accent) 82%, transparent); }
 .fab svg { width: 26px; height: 26px; }
 
 /* ───────────────────────── Library ───────────────────────── */
@@ -424,8 +418,8 @@ input, textarea { font: inherit; color: inherit; }
   opacity: 0;
 }
 .row-actions .act svg { width: 22px; height: 22px; }
-.row-actions .left { background: linear-gradient(90deg, #30d158, #34c7a1); }
-.row-actions .right { background: linear-gradient(270deg, #ff453a, #ff6b5a); margin-left: auto; }
+.row-actions .left { background: var(--success); }
+.row-actions .right { background: var(--danger); margin-left: auto; }
 .row {
   --radius: var(--r-lg);
   display: flex;
@@ -444,10 +438,12 @@ input, textarea { font: inherit; color: inherit; }
   display: grid;
   place-items: center;
   color: white;
-  font-weight: 800;
-  font-size: 15px;
-  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  background: linear-gradient(180deg, var(--monogram-top), var(--monogram-bottom));
 }
+.row .art.playing { background: var(--accent); }
 .row .body { min-width: 0; flex: 1; }
 .row .t { font-weight: 600; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .p { color: var(--text-2); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
@@ -485,24 +481,32 @@ input, textarea { font: inherit; color: inherit; }
   min-height: 228px;
   cursor: pointer;
 }
-.voice-card.selected { box-shadow: var(--glass-shadow), inset 0 0 0 2px color-mix(in srgb, var(--hue-b) 80%, white); }
+.voice-card.selected { box-shadow: var(--glass-shadow), inset 0 0 0 2px var(--accent); }
+/* Voice avatar: neutral monogram (iOS Contacts style) */
 .orb {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   position: relative;
-  box-shadow: inset 0 -8px 18px rgba(0, 0, 0, 0.25), inset 0 6px 14px rgba(255, 255, 255, 0.55), 0 10px 26px rgba(0, 0, 0, 0.3);
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, var(--monogram-top), var(--monogram-bottom));
+  color: white;
+  container-type: inline-size;
+  box-shadow: 0 0 0 calc(var(--level, 0) * 10px) color-mix(in srgb, var(--accent) 22%, transparent);
+  transition: box-shadow 0.08s linear;
 }
-.orb::after { content: ''; position: absolute; left: 18%; top: 10%; width: 42%; height: 30%; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,255,255,.85), transparent 70%); filter: blur(1px); }
+.orb span { font-size: 44cqw; font-weight: 600; letter-spacing: 0.01em; line-height: 1; }
 .voice-card .name { font-size: 22px; font-weight: 700; }
 .voice-card .desc { font-size: 13px; color: var(--text-2); line-height: 1.35; flex: 1; }
 .voice-card .tech { font-size: 11px; color: var(--text-3); }
 .voice-card .row2 { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
-.status-chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--fill); color: var(--text-2); display: inline-flex; align-items: center; gap: 6px; }
+.status-chip { white-space: nowrap; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--fill); color: var(--text-2); display: inline-flex; align-items: center; gap: 6px; }
 .status-chip.ready { background: color-mix(in srgb, var(--success) 22%, transparent); color: var(--success); }
 .status-chip svg { width: 12px; height: 12px; }
 .mini-progress { height: 4px; border-radius: 4px; background: var(--fill); overflow: hidden; }
-.mini-progress > div { height: 100%; background: linear-gradient(90deg, var(--hue-a), var(--hue-b)); border-radius: 4px; transition: width 0.2s; }
+.mini-progress > div { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.2s; }
 
 /* ───────────────────────── Tab bar ───────────────────────── */
 .tabbar-wrap {
@@ -544,7 +548,7 @@ input, textarea { font: inherit; color: inherit; }
   border-radius: 999px;
 }
 .tab svg { width: 24px; height: 24px; }
-.tab.on { color: var(--accent-2); }
+.tab.on { color: var(--accent); }
 .tabbar .lens {
   position: absolute;
   top: 4px;
@@ -581,7 +585,7 @@ input, textarea { font: inherit; color: inherit; }
 .mini .icon-btn { width: 44px; height: 44px; background: transparent; box-shadow: none; }
 .mini .icon-btn::before, .mini .icon-btn::after { display: none; }
 .mini .bar { position: absolute; left: 26px; right: 26px; bottom: 3px; height: 2.5px; border-radius: 2px; background: var(--fill); overflow: hidden; z-index: 3; }
-.mini .bar > div { height: 100%; background: linear-gradient(90deg, var(--hue-a), var(--hue-b)); }
+.mini .bar > div { height: 100%; background: var(--accent); }
 
 /* ───────────────────────── Sheets ───────────────────────── */
 .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.35); opacity: 0; pointer-events: none; }
@@ -617,7 +621,7 @@ input, textarea { font: inherit; color: inherit; }
   text-align: center;
   color: var(--text);
 }
-.now-line .w.now { background: linear-gradient(135deg, var(--hue-a), var(--hue-b)); color: white; border-radius: 6px; padding: 0 3px; margin: 0 -3px; }
+.now-line .w.now { background: color-mix(in srgb, var(--accent) 26%, transparent); color: var(--text); border-radius: 5px; padding: 0 3px; margin: 0 -3px; }
 .now-line .w.past { color: var(--text); }
 .now-line .w.future { color: var(--text-3); }
 .controls { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 14px 0; }
@@ -626,7 +630,7 @@ input, textarea { font: inherit; color: inherit; }
 /* ───────────────────────── Slider (liquid thumb) ───────────────────────── */
 .slider { position: relative; height: 36px; touch-action: none; cursor: pointer; }
 .slider .track { position: absolute; left: 0; right: 0; top: 50%; height: 8px; margin-top: -4px; border-radius: 8px; background: var(--fill); overflow: hidden; }
-.slider .fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--hue-a), var(--hue-b)); border-radius: 8px; }
+.slider .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 8px; }
 .slider .thumb {
   --radius: 999px;
   position: absolute;

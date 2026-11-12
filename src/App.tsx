@@ -8,8 +8,6 @@ import { settings } from './lib/settings';
 import { library, loadLibrary, patchDoc, type Doc } from './lib/library';
 import { refreshCacheStatus, setAcceleration, warmUp } from './tts/engine';
 import { narrator, playerState } from './tts/player';
-import { detectLang } from './tts/text/detect';
-import { voiceFor } from './tts/voices';
 import { ReadScreen } from './screens/ReadScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { VoicesScreen } from './screens/VoicesScreen';
@@ -21,7 +19,6 @@ const TABS: Tab[] = ['read', 'library', 'voices'];
 
 export function App() {
   const s = useStore(settings);
-  const ps = useStore(playerState);
   const [tab, setTab] = useState<Tab>('read');
   const [doc, setDoc] = useState<Doc | null>(null);
   const [playerOpen, setPlayerOpen] = useState(false);
@@ -74,17 +71,6 @@ export function App() {
     if (wasPlaying) void narrator.play();
   }, [s.lang]);
 
-  // Ambient tint follows the active voice
-  const lang = ps.plan?.chunks[ps.chunk]?.lang ?? (doc ? detectLang(doc.text.slice(0, 500), 'en') : 'en');
-  const voice = voiceFor(s.lang === 'auto' ? lang : s.lang, s.gender);
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty('--hue-a', voice.hue[0]);
-    root.style.setProperty('--hue-b', voice.hue[1]);
-    root.style.setProperty('--accent', voice.hue[1]);
-    root.style.setProperty('--accent-2', voice.hue[0]);
-  }, [voice]);
-
   // Screen transitions: the incoming screen slides and settles on a spring; the outgoing one
   // recedes slightly, as in iOS.
   const prevTab = useRef<Tab>(tab);
@@ -129,13 +115,7 @@ export function App() {
 
   return (
     <>
-      <div className="ambient" aria-hidden>
-        <div className="blob b1" />
-        <div className="blob b2" />
-        <div className="blob b3" />
-        <div className="lines" />
-        <div className="grain" />
-      </div>
+      <div className="ambient" aria-hidden />
       <main className="app">
         <div ref={(el) => { screens.current.read = el; }} className="screen" aria-hidden={tab !== 'read'}>
           <ReadScreen doc={doc} setDoc={setDoc} openSettings={() => setSettingsOpen(true)} />

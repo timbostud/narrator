@@ -26,19 +26,21 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    // Works from any subfolder: the app shell is keyed by the worker's scope.
+    const shell = self.registration.scope;
     if (req.mode === 'navigate') {
       try {
         const res = await fetch(req);
-        if (res.ok) await cache.put('/', res.clone());
+        if (res.ok) await cache.put(shell, res.clone());
         return isolate(res);
       } catch {
-        return isolate((await cache.match('/')) || Response.error());
+        return isolate((await cache.match(shell)) || Response.error());
       }
     }
     const hit = await cache.match(req);
     if (hit) return isolate(hit);
     const res = await fetch(req);
-    if (res.ok && (url.pathname.startsWith('/assets/') || /\.(svg|webmanifest|wasm|data)$/.test(url.pathname))) {
+    if (res.ok && (url.pathname.includes('/assets/') || /\.(svg|webmanifest|wasm|data)$/.test(url.pathname))) {
       await cache.put(req, res.clone());
     }
     return isolate(res);

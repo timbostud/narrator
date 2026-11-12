@@ -5,8 +5,6 @@ import { drag, haptic, rubberBand, Spring, SPRINGS, squeeze } from '../ui/physic
 import { useStore } from '../lib/store';
 import { deleteDoc, library, newDoc, patchDoc, saveDoc, type Doc } from '../lib/library';
 import { detectLang } from '../tts/text/detect';
-import { voiceFor } from '../tts/voices';
-import { settings } from '../lib/settings';
 import { playerState } from '../tts/player';
 
 const ACTION_W = 96;
@@ -24,8 +22,6 @@ function SwipeRow({ doc, onOpen, onPlay }: { doc: Doc; onOpen: () => void; onPla
   const cbs = useRef({ onOpen, onPlay, doc });
   cbs.current = { onOpen, onPlay, doc };
   const lang = useMemo(() => detectLang(doc.text.slice(0, 600), 'en'), [doc.text]);
-  const gender = useStore(settings, (s) => s.gender);
-  const v = voiceFor(lang, gender);
   const nowPlaying = useStore(playerState, (s) => s.docId === doc.id && (s.status === 'playing' || s.status === 'buffering'));
 
   useEffect(() => {
@@ -133,7 +129,7 @@ function SwipeRow({ doc, onOpen, onPlay }: { doc: Doc; onOpen: () => void; onPla
       </div>
       <Glass ref={row} className="row" refraction={false} role="button" tabIndex={0} aria-label={`Open ${doc.title}`}
         onKeyDown={(e) => e.key === 'Enter' && onOpen()}>
-        <div className="art" style={{ background: `linear-gradient(135deg, ${v.hue[0]}, ${v.hue[1]})` }}>{nowPlaying ? <Play width={20} /> : initials}</div>
+        <div className={`art ${nowPlaying ? 'playing' : ''}`}>{nowPlaying ? <Play width={20} /> : initials}</div>
         <div className="body">
           <div className="t">{doc.title || 'Untitled'}</div>
           <div className="p">{doc.text.slice(0, 160) || 'Empty'}</div>
@@ -156,7 +152,7 @@ function ProgressRing({ value }: { value: number }) {
   return (
     <svg className="progress-ring" viewBox="0 0 30 30" aria-label={`${Math.round(value * 100)}% listened`}>
       <circle cx="15" cy="15" r={r} fill="none" stroke="var(--fill)" strokeWidth="3" />
-      <circle cx="15" cy="15" r={r} fill="none" stroke="var(--accent-2)" strokeWidth="3" strokeLinecap="round"
+      <circle cx="15" cy="15" r={r} fill="none" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"
         strokeDasharray={`${c * value} ${c}`} transform="rotate(-90 15 15)" />
     </svg>
   );

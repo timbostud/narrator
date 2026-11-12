@@ -120,7 +120,7 @@ export function PlayerSheet({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Sheet open={open} onClose={onClose}>
-      <div className="sheet-scroll" style={{ ['--hue-a' as string]: voice.hue[0], ['--hue-b' as string]: voice.hue[1] }}>
+      <div className="sheet-scroll">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <IconButton label="Close player" onClick={onClose}><ChevronDown /></IconButton>
           <IconButton label={exporting !== null ? `Exporting ${Math.round(exporting * 100)}%` : 'Export as WAV'} onClick={() => void exportAudio()}>

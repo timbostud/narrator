@@ -453,7 +453,7 @@ export function Toaster() {
     <Glass ref={ref} className="toast strong" refraction={{ depth: 30 }} role="status">
       {t.icon}<span>{t.text}</span>
       {t.action && (
-        <button type="button" style={{ color: 'var(--accent-2)', fontWeight: 700, marginLeft: 6 }}
+        <button type="button" style={{ color: 'var(--accent)', fontWeight: 700, marginLeft: 6 }}
           onClick={() => { t.action!.run(); y.current.to(-1, { config: SPRINGS.smooth, onRest: () => setT(null) }); }}>
           {t.action.label}
         </button>

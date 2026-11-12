@@ -11,6 +11,8 @@ const isolation = {
 };
 
 export default defineConfig({
+  // Relative asset paths, so the build works from any subfolder (e.g. GitHub Pages /narrator/).
+  base: './',
   plugins: [react()],
   resolve: {
     alias: [
